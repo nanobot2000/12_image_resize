@@ -10,17 +10,19 @@ def resize_image(inputfile, outputdir, width, height, scale):
     old_dir = os.path.split(inputfile)[0]
     old_filename, extension = os.path.split(inputfile)[-1].split('.')
     if scale and width is None and height is None:
-        new_width, new_height = old_width*scale, old_height*scale
-    elif width and height:
-        new_width, new_height = width, height
-    elif width:
-        scale = width/old_width
         new_width, new_height = old_width * scale, old_height * scale
-    elif height:
+    elif width and height and scale is None:
+        new_width, new_height = width, height
+        if width / old_width != height / old_height:
+            print('New image has different scale')
+    elif width and scale is None:
+        scale = width / old_width
+        new_width, new_height = old_width * scale, old_height * scale
+    elif height and scale is None:
         scale = height / old_height
         new_width, new_height = old_width * scale, old_height * scale
     else:
-        sys.exit('No arguments provided!')
+        sys.exit('Incorrect or no arguments provided!')
     new_name = '{old_filename}__{new_width}x{new_height}.{extension}'.format(
         old_filename=old_filename,
         new_width=new_width,
@@ -30,8 +32,10 @@ def resize_image(inputfile, outputdir, width, height, scale):
     im = im.resize(size=(new_width, new_height))
     if outputdir:
         im.save(os.path.join(outputdir, new_name))
+        print('Image is saved as {}'.format(os.path.join(outputdir, new_name)))
     else:
         im.save(os.path.join(old_dir, new_name))
+        print('Image is saved as {}'.format(os.path.join(old_dir, new_name)))
 
 
 def create_argparser():
