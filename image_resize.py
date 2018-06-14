@@ -18,18 +18,7 @@ def validate_args(args):
         outputdir = args.outputdir
     else:
         outputdir = None
-    if any([args.width, args.height, args.scale]):
-        if args.scale and not any([args.width, args.height]):
-            scale = args.scale
-            width, height = args.width, args.height
-        elif (args.width or args.height) and not args.scale:
-            scale = args.scale
-            width, height = args.width, args.height
-        else:
-            sys.exit('Width and height parameters are not compatible with the scale')
-    else:
-        sys.exit('No parameters was provided for image resizing')
-    return inputfile, outputdir, scale,  width, height
+    return inputfile, outputdir
 
 
 def create_argparser():
@@ -91,8 +80,19 @@ def get_new_filename(old_filename, new_width, new_height):
 
 
 if __name__ == '__main__':
-    argparser = create_argparser()
-    inputfile, outputdir, scale, width, height = validate_args(argparser)
+    args = create_argparser()
+    inputfile, outputdir = validate_args(args)
+    if any([args.width, args.height, args.scale]):
+        if args.scale and not any([args.width, args.height]):
+            scale = args.scale
+            width, height = args.width, args.height
+        elif (args.width or args.height) and not args.scale:
+            scale = args.scale
+            width, height = args.width, args.height
+        else:
+            sys.exit('Width and height parameters are not compatible with the scale')
+    else:
+        sys.exit('No parameters was provided for image resizing')
     image = Image.open(inputfile)
     new_width, new_height = get_new_image_size(image, scale, width, height)
     resized_image = resize_image(image, new_width, new_height)
