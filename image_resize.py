@@ -9,18 +9,6 @@ def resize_image(image, width, height):
     return image.resize(size=(width, height))
 
 
-def validate_args(args):
-    if os.path.isfile(args.inputfile):
-        inputfile = args.inputfile
-    else:
-        sys.exit("Image file doesn't exist")
-    if args.outputdir and os.path.isdir(args.outputdir):
-        outputdir = args.outputdir
-    else:
-        outputdir = None
-    return inputfile, outputdir
-
-
 def create_argparser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -81,7 +69,14 @@ def get_new_filename(old_filename, new_width, new_height):
 
 if __name__ == '__main__':
     args = create_argparser()
-    inputfile, outputdir = validate_args(args)
+    if os.path.isfile(args.inputfile):
+        inputfile = args.inputfile
+    else:
+        sys.exit("Image file doesn't exist")
+    if args.outputdir and os.path.isdir(args.outputdir):
+        outputdir = args.outputdir
+    else:
+        outputdir = None
     if any([args.width, args.height, args.scale]):
         if args.scale and not any([args.width, args.height]):
             scale = args.scale
