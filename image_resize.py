@@ -97,9 +97,9 @@ if __name__ == '__main__':
     inputfile, outputdir, scale, width, height = validate_args(argparser)
     if not inputfile:
         sys.exit("Image file doesn't exist")
-    elif not any(scale, width, height):
+    elif not any([scale, width, height]):
         sys.exit('No parameters was provided for image resizing')
-    elif all(scale, width) or all(scale, height):
+    elif all([scale, width]) or all([scale, height]):
         sys.exit('Incompatible arguments scale with width and height')
     image = Image.open(inputfile)
     new_width, new_height = get_new_image_size(image, scale, width, height)
