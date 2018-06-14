@@ -9,6 +9,29 @@ def resize_image(image, width, height):
     return image.resize(size=(width, height))
 
 
+def validate_args(args):
+    if os.path.isfile(args.inputfile):
+        inputfile = args.inputfile
+    else:
+        inputfile = None
+    if args.outputdir and os.path.isdir(args.outputdir):
+        outputdir = args.outputdir
+    else:
+        outputdir = None
+    if any([args.width, args.height, args.scale]):
+        if args.scale and not any([args.width, args.height]):
+            scale = args.scale
+            width, height = args.width, args.height
+        elif (args.width or args.height) and not args.scale:
+            scale = args.scale
+            width, height = args.width, args.height
+        else:
+            scale, width, height = args.scale, args.width, args.height
+    else:
+        scale, width, height = args.scale, args.width, args.height
+    return inputfile, outputdir, scale, width, height
+
+
 def create_argparser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -56,7 +79,8 @@ def get_new_image_size(image, scale, width, height):
     return new_width, new_height
 
 
-def get_new_filename(old_filename, new_width, new_height):
+def get_new_filename(inputfile, new_width, new_height):
+    old_filename = os.path.split(inputfile)[-1]
     filename, extension = os.path.splitext(old_filename)
     new_filename = '{filename}__{new_width}x{new_height}{extension}'.format(
         filename=filename,
@@ -68,31 +92,19 @@ def get_new_filename(old_filename, new_width, new_height):
 
 
 if __name__ == '__main__':
-    args = create_argparser()
-    if os.path.isfile(args.inputfile):
-        inputfile = args.inputfile
-    else:
+
+    argparser = create_argparser()
+    inputfile, outputdir, scale, width, height = validate_args(argparser)
+    if not inputfile:
         sys.exit("Image file doesn't exist")
-    if args.outputdir and os.path.isdir(args.outputdir):
-        outputdir = args.outputdir
-    else:
-        outputdir = None
-    if any([args.width, args.height, args.scale]):
-        if args.scale and not any([args.width, args.height]):
-            scale = args.scale
-            width, height = args.width, args.height
-        elif (args.width or args.height) and not args.scale:
-            scale = args.scale
-            width, height = args.width, args.height
-        else:
-            sys.exit('Width and height parameters are not compatible with the scale')
-    else:
+    elif not any(scale, width, height):
         sys.exit('No parameters was provided for image resizing')
+    elif all(scale, width) or all(scale, height):
+        sys.exit('Incompatible arguments scale with width and height')
     image = Image.open(inputfile)
     new_width, new_height = get_new_image_size(image, scale, width, height)
     resized_image = resize_image(image, new_width, new_height)
-    old_filename = os.path.split(inputfile)[-1]
-    new_filename = get_new_filename(old_filename, new_width, new_height)
+    new_filename = get_new_filename(inputfile, new_width, new_height)
     if outputdir:
         outputfile = os.path.join(outputdir, new_filename)
     else:
