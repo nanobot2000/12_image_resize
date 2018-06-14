@@ -80,7 +80,7 @@ def get_new_image_size(image, scale, width, height):
 
 
 def get_new_filename(inputfile, new_width, new_height):
-    old_filename = os.path.split(inputfile)[-1]
+    _, old_filename = os.path.split(inputfile)
     filename, extension = os.path.splitext(old_filename)
     new_filename = '{filename}__{new_width}x{new_height}{extension}'.format(
         filename=filename,
