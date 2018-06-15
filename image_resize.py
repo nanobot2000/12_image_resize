@@ -1,5 +1,4 @@
 import os
-import sys
 import math
 import argparse
 from PIL import Image
@@ -9,11 +8,12 @@ def resize_image(image, width, height):
     return image.resize(size=(width, height))
 
 
-def validate_args(args):
+def validate_args(argparser):
+    args = argparser.parse_args()
     if os.path.isfile(args.inputfile):
         inputfile = args.inputfile
     else:
-        inputfile = None
+        argparser.error("Image file doesn't exist")
     if args.outputdir and os.path.isdir(args.outputdir):
         outputdir = args.outputdir
     else:
@@ -26,9 +26,9 @@ def validate_args(args):
             scale = args.scale
             width, height = args.width, args.height
         else:
-            scale, width, height = args.scale, args.width, args.height
+            argparser.error('Incompatible arguments scale with width and height')
     else:
-        scale, width, height = args.scale, args.width, args.height
+        argparser.error('No parameters was provided for image resizing')
     return inputfile, outputdir, scale, width, height
 
 
@@ -58,22 +58,18 @@ def create_argparser():
         '--outputdir',
         help='full path to output directory',
     )
-    args = parser.parse_args()
-    return args
+    return parser
 
 
-def get_new_image_size(image, scale, width, height):
-    old_width, old_height = image.size
-    if scale and not any([width, height]):
+def get_new_image_size(old_width, old_height, scale, width, height):
+    if scale:
         new_width, new_height = int(old_width * scale), int(old_height * scale)
-    elif width and height and not scale:
+    elif width and height:
         new_width, new_height = width, height
-        if not math.isclose(width / old_width, height / old_height, rel_tol=1e-5):
-            print('New image has different scale')
-    elif width and not scale:
+    elif width:
         scale = width / old_width
         new_width, new_height = int(old_width * scale), int(old_height * scale)
-    elif height and not scale:
+    elif height:
         scale = height / old_height
         new_width, new_height = int(old_width * scale), int(old_height * scale)
     return new_width, new_height
@@ -91,24 +87,24 @@ def get_new_filename(inputfile, new_width, new_height):
     return new_filename
 
 
-if __name__ == '__main__':
+def is_preserved_image_ratio(old_width, old_height, new_width, new_height):
+    if not math.isclose(new_width / old_width, new_height / old_height, rel_tol=1e-5):
+        print('New image has different ratio')
 
+
+if __name__ == '__main__':
     argparser = create_argparser()
     inputfile, outputdir, scale, width, height = validate_args(argparser)
-    if not inputfile:
-        sys.exit("Image file doesn't exist")
-    elif not any([scale, width, height]):
-        sys.exit('No parameters was provided for image resizing')
-    elif all([scale, width]) or all([scale, height]):
-        sys.exit('Incompatible arguments scale with width and height')
     image = Image.open(inputfile)
-    new_width, new_height = get_new_image_size(image, scale, width, height)
+    old_width, old_height = image.size
+    new_width, new_height = get_new_image_size(old_width, old_height, scale, width, height)
+    is_preserved_image_ratio(old_width, old_height, new_width, new_height)
     resized_image = resize_image(image, new_width, new_height)
     new_filename = get_new_filename(inputfile, new_width, new_height)
     if outputdir:
-        outputfile = os.path.join(outputdir, new_filename)
+        output_file_path = os.path.join(outputdir, new_filename)
     else:
         old_dir, _ = os.path.split(inputfile)
-        outputfile = os.path.join(old_dir, new_filename)
-    resized_image.save(outputfile)
-    print('Image is saved as {}'.format(outputfile))
+        output_file_path = os.path.join(old_dir, new_filename)
+    resized_image.save(output_file_path)
+    print('Image is saved as {}'.format(output_file_path))
