@@ -4,7 +4,7 @@ Script resize your image with provided size or scale
 
 # Quickstart
 
-The script requires the installed Python interpreter version 3.6
+The script requires the installed Python interpreter version 3.x.
 
 You have to run the script with the `--inputfile` argument with the path to image.
 
