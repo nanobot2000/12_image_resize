@@ -6,7 +6,7 @@ Script resize your image with provided size or scale
 
 The script requires the installed Python interpreter version 3.6
 
-You have to run the script with the `--inputfile` argument with path to image.
+You have to run the script with the `--inputfile` argument with the path to image.
 
 You can provide optional arguments:\
 `--width` - desired width of new image;\
